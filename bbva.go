@@ -20,13 +20,16 @@ func (tr *BBVAPDFTransactionReader) parseReportDate(v string) (time.Time, error)
 	return time.Parse("02/01/2006", v)
 }
 
-// parseTransactionDate parses a partial DD/MM date, and requires passing in a year value.
-func (tr *BBVAPDFTransactionReader) parseTransactionDate(year int, v string) (time.Time, error) {
+// parseTransactionDate parses a partial DD/MM date, and requires passing in a report date.
+// BBVA reports are generated on the first day of the month and contain transactions from the
+// previous month: a 2018-02 report would include transactions from 2018-01 to 2018-31.
+func (tr *BBVAPDFTransactionReader) parseTransactionDate(reportDate time.Time, v string) (time.Time, error) {
 	t, err := time.Parse("02/01", v)
 	if err != nil {
 		return t, err
 	}
-	return t.AddDate(year, 0, 0), nil
+	reportingDate := reportDate.AddDate(0, -1, 0)
+	return t.AddDate(reportingDate.Year(), 0, 0), nil
 }
 
 // parseAmount parses an EU-bank-format float64, which uses thousands-dot notation
@@ -86,11 +89,11 @@ func (tr *BBVAPDFTransactionReader) Read(src Reader) (m Metadata, txs []Transact
 		for j := 7; j < len(rows)-5; j += 2 {
 			transaction := rows[j]
 			details := rows[j+1]
-			txDate, err := tr.parseTransactionDate(m.ReportDate.Year(), transaction.Content[0].S)
+			txDate, err := tr.parseTransactionDate(m.ReportDate, transaction.Content[0].S)
 			if err != nil {
 				return m, nil, errors.Wrapf(err, "error parsing transaction date at page %d row %d", i, j-7)
 			}
-			date, err := tr.parseTransactionDate(m.ReportDate.Year(), transaction.Content[1].S)
+			date, err := tr.parseTransactionDate(m.ReportDate, transaction.Content[1].S)
 			if err != nil {
 				return m, nil, errors.Wrapf(err, "error parsing date at page %d row %d", i, j-7)
 			}

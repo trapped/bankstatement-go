@@ -31,20 +31,20 @@ func TestParseReportDate(t *testing.T) {
 
 func TestParseTransactionDate(t *testing.T) {
 	tcs := []struct {
-		year int
-		v    string
-		out  time.Time
-		err  bool
+		reportDate time.Time
+		v          string
+		out        time.Time
+		err        bool
 	}{
-		{1987, "12/04", time.Date(1987, 4, 12, 0, 0, 0, 0, time.UTC), false},
-		{2022, "31/01", time.Date(2022, 1, 31, 0, 0, 0, 0, time.UTC), false},
-		{2022, "ababe", time.Time{}, true},
-		{2022, "12", time.Time{}, true},
+		{time.Date(1987, 5, 1, 0, 0, 0, 0, time.UTC), "12/04", time.Date(1987, 4, 12, 0, 0, 0, 0, time.UTC), false},
+		{time.Date(2022, 2, 1, 0, 0, 0, 0, time.UTC), "31/01", time.Date(2022, 1, 31, 0, 0, 0, 0, time.UTC), false},
+		{time.Date(2022, 2, 1, 0, 0, 0, 0, time.UTC), "ababe", time.Time{}, true},
+		{time.Date(2022, 2, 1, 0, 0, 0, 0, time.UTC), "12", time.Time{}, true},
 	}
 	tr := new(BBVAPDFTransactionReader)
 	for _, tc := range tcs {
-		t.Run(fmt.Sprintf("parses %s (%d)", tc.v, tc.year), func(t *testing.T) {
-			out, err := tr.parseTransactionDate(tc.year, tc.v)
+		t.Run(fmt.Sprintf("parses %s (%s)", tc.v, tc.reportDate), func(t *testing.T) {
+			out, err := tr.parseTransactionDate(tc.reportDate, tc.v)
 			assert.Equal(t, tc.out, out, "time doesn't match")
 			assert.Equal(t, tc.err, err != nil, "error doesn't match")
 		})
