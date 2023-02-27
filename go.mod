@@ -5,7 +5,7 @@ go 1.17
 require (
 	github.com/ledongthuc/pdf v0.0.0-20210621053716-e28cb8259002
 	github.com/pkg/errors v0.9.1
-	github.com/stretchr/testify v1.7.5
+	github.com/stretchr/testify v1.8.2
 )
 
 require (
